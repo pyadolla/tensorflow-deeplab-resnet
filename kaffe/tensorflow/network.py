@@ -75,7 +75,7 @@ class Network(object):
         assert len(args) != 0
         self.terminals = []
         for fed_layer in args:
-            if isinstance(fed_layer, basestring):
+            if isinstance(fed_layer, str):
                 try:
                     fed_layer = self.layers[fed_layer]
                 except KeyError:
@@ -118,7 +118,7 @@ class Network(object):
         # Verify that the padding is acceptable
         self.validate_padding(padding)
         # Get the number of channels in the input
-        c_i = input.get_shape()[-1]
+        c_i = input.get_shape().as_list()[-1]
         # Verify that the grouping parameter is valid
         assert c_i % group == 0
         assert c_o % group == 0
@@ -160,7 +160,7 @@ class Network(object):
         # Verify that the padding is acceptable
         self.validate_padding(padding)
         # Get the number of channels in the input
-        c_i = input.get_shape()[-1]
+        c_i = input.get_shape().as_list()[-1]
         # Verify that the grouping parameter is valid
         assert c_i % group == 0
         assert c_o % group == 0
@@ -186,7 +186,7 @@ class Network(object):
                 # ReLU non-linearity
                 output = tf.nn.relu(output, name=scope.name)
             return output
-        
+
     @layer
     def relu(self, input, name):
         return tf.nn.relu(input, name=name)
@@ -229,7 +229,7 @@ class Network(object):
     @layer
     def fc(self, input, num_out, name, relu=True):
         with tf.variable_scope(name) as scope:
-            input_shape = input.get_shape()
+            input_shape = input.get_shape().as_list()
             if input_shape.ndims == 4:
                 # The input is spatial. Vectorize it first.
                 dim = 1
@@ -246,7 +246,7 @@ class Network(object):
 
     @layer
     def softmax(self, input, name):
-        input_shape = map(lambda v: v.value, input.get_shape())
+        input_shape = map(lambda v: v.value, input.get_shape().as_list())
         if len(input_shape) > 2:
             # For certain models (like NiN), the singleton spatial dimensions
             # need to be explicitly squeezed, since they're not broadcast-able
@@ -256,7 +256,7 @@ class Network(object):
             else:
                 raise ValueError('Rank 2 tensor input expected for softmax!')
         return tf.nn.softmax(input, name)
-        
+
     @layer
     def batch_normalization(self, input, name, is_training, activation_fn=None, scale=True):
         with tf.variable_scope(name) as scope:

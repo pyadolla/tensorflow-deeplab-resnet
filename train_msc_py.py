@@ -12,16 +12,16 @@ from datetime import datetime
 import os
 import sys
 import time
-
+import socket
 import tensorflow as tf
 import numpy as np
 
 from deeplab_resnet import DeepLabResNetModel, ImageReader, decode_labels, inv_preprocess, prepare_label
-
+hostname = socket.gethostname()
 IMG_MEAN = np.array((106.13218097,116.46633804,124.99149765), dtype=np.float32)
 BATCH_SIZE = 1
-DATA_DIRECTORY = '/share/data/vision-greg/pyadolla/alearning/data/ADE20K_2016_07_26/ADEalearning_class_remap'
-DATA_LIST_PATH = '/share/data/vision-greg/pyadolla/alearning/data/ADE20K_2016_07_26/ADEalearning_class_remap/train.txt';
+DATA_DIRECTORY = '/root/alearn/data/ADEalearning_class_remap'
+DATA_LIST_PATH = '/root/alearn/data/ADEalearning_class_remap/train.txt';
 GRAD_UPDATE_EVERY = 10
 IGNORE_LABEL = 255
 INPUT_SIZE = '321,321'
@@ -31,10 +31,10 @@ NUM_CLASSES = 13
 NUM_STEPS = 20001
 POWER = 0.9
 RANDOM_SEED = 1234
-RESTORE_FROM = './deeplab_resnet_init.ckpt'
+RESTORE_FROM = '/root/alearn/checkpoints/'+ hostname +'/deeplab_resnet_init.ckpt'
 SAVE_NUM_IMAGES = 1
 SAVE_PRED_EVERY = 1000
-SNAPSHOT_DIR = './snapshots/'
+SNAPSHOT_DIR = '/root/alearn/snapshots/'+ hostname +'/'
 WEIGHT_DECAY = 0.0005
 
 
