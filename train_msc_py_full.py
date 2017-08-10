@@ -320,44 +320,44 @@ def main():
     # Define loss and optimisation parameters.
     base_lr = tf.constant(args.learning_rate)
     step_ph = tf.placeholder(dtype=tf.float32, shape=())
-    learning_rate = tf.scalar_mul(base_lr, tf.pow((1 - step_ph / (40000+args.num_steps)), args.power))
+    learning_rate = tf.scalar_mul(base_lr, tf.pow((1 - step_ph / (20000+args.num_steps)), args.power))
 
     opt_conv = tf.train.MomentumOptimizer(learning_rate, args.momentum)
     opt_fc_w = tf.train.MomentumOptimizer(learning_rate * 10.0, args.momentum)
     opt_fc_b = tf.train.MomentumOptimizer(learning_rate * 20.0, args.momentum)
 
     # Define a variable to accumulate gradients.
-    #accum_grads = [tf.Variable(tf.zeros_like(v.initialized_value()),
-    #                           trainable=False) for v in conv_trainable + fc_w_trainable + fc_b_trainable]
     accum_grads = [tf.Variable(tf.zeros_like(v.initialized_value()),
-                               trainable=False) for v in fc_w_trainable + fc_b_trainable]
+                               trainable=False) for v in conv_trainable + fc_w_trainable + fc_b_trainable]
+    # accum_grads = [tf.Variable(tf.zeros_like(v.initialized_value()),
+    #                            trainable=False) for v in fc_w_trainable + fc_b_trainable]
 
     # Define an operation to clear the accumulated gradients for next batch.
     zero_op = [v.assign(tf.zeros_like(v)) for v in accum_grads]
 
     # Compute gradients.
-    #grads = tf.gradients(reduced_loss, conv_trainable + fc_w_trainable + fc_b_trainable)
-    grads = tf.gradients(reduced_loss, fc_w_trainable + fc_b_trainable)
+    grads = tf.gradients(reduced_loss, conv_trainable + fc_w_trainable + fc_b_trainable)
+    #grads = tf.gradients(reduced_loss, fc_w_trainable + fc_b_trainable)
 
     # Accumulate and normalise the gradients.
     accum_grads_op = [accum_grads[i].assign_add(grad / args.grad_update_every) for i, grad in
                        enumerate(grads)]
 
-    #grads_conv = accum_grads[:len(conv_trainable)]
-    #grads_fc_w = accum_grads[len(conv_trainable) : (len(conv_trainable) + len(fc_w_trainable))]
-    #grads_fc_b = accum_grads[(len(conv_trainable) + len(fc_w_trainable)):]
-    grads_fc_w = accum_grads[:len(fc_w_trainable)]
-    grads_fc_b = accum_grads[len(fc_w_trainable):]
+    grads_conv = accum_grads[:len(conv_trainable)]
+    grads_fc_w = accum_grads[len(conv_trainable) : (len(conv_trainable) + len(fc_w_trainable))]
+    grads_fc_b = accum_grads[(len(conv_trainable) + len(fc_w_trainable)):]
+    # grads_fc_w = accum_grads[:len(fc_w_trainable)]
+    # grads_fc_b = accum_grads[len(fc_w_trainable):]
 
     # Apply the gradients.
-    # train_op_conv = opt_conv.apply_gradients(zip(grads_conv, conv_trainable))
-    # train_op_fc_w = opt_fc_w.apply_gradients(zip(grads_fc_w, fc_w_trainable))
-    # train_op_fc_b = opt_fc_b.apply_gradients(zip(grads_fc_b, fc_b_trainable))
+    train_op_conv = opt_conv.apply_gradients(zip(grads_conv, conv_trainable))
     train_op_fc_w = opt_fc_w.apply_gradients(zip(grads_fc_w, fc_w_trainable))
     train_op_fc_b = opt_fc_b.apply_gradients(zip(grads_fc_b, fc_b_trainable))
+    # train_op_fc_w = opt_fc_w.apply_gradients(zip(grads_fc_w, fc_w_trainable))
+    # train_op_fc_b = opt_fc_b.apply_gradients(zip(grads_fc_b, fc_b_trainable))
 
-    # train_op = tf.group(train_op_conv, train_op_fc_w, train_op_fc_b)
-    train_op = tf.group(train_op_fc_w, train_op_fc_b)
+    train_op = tf.group(train_op_conv, train_op_fc_w, train_op_fc_b)
+    # train_op = tf.group(train_op_fc_w, train_op_fc_b)
 
 
     # Set up tf session and initialize variables.
@@ -381,7 +381,7 @@ def main():
     threads = tf.train.start_queue_runners(coord=coord, sess=sess)
 
     # Iterate over training steps.
-    for step in range(40001,40000+args.num_steps):
+    for step in range(20000,20000+args.num_steps):
         start_time = time.time()
         feed_dict = { step_ph : step }
         loss_value = 0
